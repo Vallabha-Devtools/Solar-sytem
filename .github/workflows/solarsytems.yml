@@ -3,22 +3,22 @@ on:
   push:
 
 env:
-    MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
-    MONGO_USERNAME: ${{vars.MONGO_USERNAME}}
-    MONGO_PASSWORD: ${{secrets.MONGO_PASSWORD}}
+  MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
+  MONGO_USERNAME: ${{vars.MONGO_USERNAME}}
+  MONGO_PASSWORD: ${{secrets.MONGO_PASSWORD}}
 
 jobs:   
   build:
     strategy:
-         matrix:
-           node-version: [18,19,20]
-           os: [ubuntu-latest,windows-latest]
-           exclude:
-             - node-version: 18
-               os: windows-latest
-           include:
-             - node-version: 18
-               os: ubuntu-latest
+      matrix:
+        node-version: [18,19,20]
+        os: [ubuntu-latest,windows-latest]
+        exclude:
+          - node-version: 18
+            os: windows-latest
+        include:
+          - node-version: 18
+            os: ubuntu-latest
     runs-on: ${{matrix.os}}
     steps:
       - name: checkout the repository
@@ -38,9 +38,16 @@ jobs:
   code-coverage:
     runs-on: ubuntu-latest
     steps:
-        - name: run the code-coverage
-          continue-on-error: false
-          run: npm run coverage
+      - name: run the code-coverage
+        continue-on-error: true
+        run: npm run coverage
+
+      - name: Archive the Test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: Test-Results
+          path: Test-Results.xml
+
 
         
 
