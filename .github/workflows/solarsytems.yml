@@ -1,5 +1,6 @@
+name: unit testing for the solarsytem project
 on:  
-  workflow_dispatch:
+  push:
 
 jobs:   
   build:
