@@ -1,0 +1,21 @@
+on:  
+  workflow_dispatch:
+
+jobs:   
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout the repository
+        run: actions/checkout@v4
+        
+      - name: Setup the nodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: install dependencies
+        run: npm install
+        
+      - name: Testing the file
+        run: npm test
+
