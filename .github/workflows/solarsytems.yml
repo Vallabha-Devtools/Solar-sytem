@@ -35,3 +35,12 @@ jobs:
       - name: Testing the file
         run: npm test
 
+  code-coverage:
+    runs-on: ubuntu-latest
+    steps:
+        - name: run the code-coverage
+          continue-on-error: true
+          run: npm run coverage
+
+        
+
