@@ -43,6 +43,7 @@ jobs:
         run: npm run coverage
 
       - name: Archive the Test results
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: Test-Results
