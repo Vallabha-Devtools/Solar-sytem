@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         - name: run the code-coverage
-          continue-on-error: true
+          continue-on-error: false
           run: npm run coverage
 
         
