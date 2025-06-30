@@ -1,4 +1,5 @@
-name: unit testing for the solarsytem project
+name: unit testing for the solar system project
+
 on:  
   push:
 
@@ -11,7 +12,7 @@ jobs:
   build:
     strategy:
       matrix:
-        node-version: [18, 20]
+        node-version: [18,20]
         os: [ubuntu-latest, windows-latest]
         exclude:
           - node-version: 18
@@ -50,7 +51,7 @@ jobs:
         continue-on-error: true
         run: npm run coverage
 
-      - name: Archive the Test results
+      - name: Archive test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -58,13 +59,13 @@ jobs:
           path: Test-Results.xml
   
   docker:
-    name: containerization
+    name: Containerization
     needs: [build, code-coverage]
     permissions:
       packages: write
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Login to Docker Hub
@@ -73,14 +74,14 @@ jobs:
           username: ${{ vars.DH_USERNAME }}
           password: ${{ secrets.DH_PASSWORD }}
 
-      - name: Login to GitHub Container Registry
+      - name: Login to GitHub Container Registry (GHCR)
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image (no push yet)
+      - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -88,7 +89,7 @@ jobs:
           tags: |
             ${{ vars.DH_USERNAME }}/solar-system:${{ github.sha }}
 
-      - name: Test Docker Image
+      - name: Test Docker image
         run: |
           docker images
           docker run --name solar-system-app -d \
@@ -97,14 +98,13 @@ jobs:
             -e MONGO_USERNAME=$MONGO_USERNAME \
             -e MONGO_PASSWORD=$MONGO_PASSWORD \
             ${{ vars.DH_USERNAME }}/solar-system:${{ github.sha }}
-
           export IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' solar-system-app)
           echo "Container IP: $IP"
 
-          echo "Testing Image using wget"
-          wget -q -O - 127.0.0.1:3000/live | grep live
+          echo "Testing image using wget"
+          wget -qO- 127.0.0.1:3000/live | grep live
 
-      - name: Push Docker Image to Registries
+      - name: Push image to container registries
         if: always()
         uses: docker/build-push-action@v6
         with:
@@ -112,16 +112,17 @@ jobs:
           push: true
           tags: |
             ${{ vars.DH_USERNAME }}/solar-system:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
+            ghcr.io/vallabha-devtools/solar-system:${{ github.sha }}  # ensure lowercase here
 
-# Optional: Enable dev deployment if needed
-#   dev-deploy:
-#     needs: [build, code-coverage]
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout the repository
-#         uses: actions/checkout@v4.2.2
-#       - name: Install kubectl
-#         uses: azure/setup-kubectl@v3
-#         with:
-#           version: 'v1.26.0'
+# Optional deployment job (currently commented)
+# dev-deploy:
+#   needs: [build, code-coverage]
+#   runs-on: ubuntu-latest
+#   steps:
+#     - name: Checkout the repository
+#       uses: actions/checkout@v4.2.2
+#     
+#     - name: Install kubectl
+#       uses: azure/setup-kubectl@v3
+#       with: 
+#         version: 'v1.26.0'
