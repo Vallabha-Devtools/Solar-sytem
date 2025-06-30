@@ -35,7 +35,6 @@ jobs:
           path: node_modules
           key: ${{runner.os}}-node_modules-${{hashfiles('package-lock.json')}}
 
-
       - name: install dependencies
         run: npm install
         
@@ -48,11 +47,10 @@ jobs:
     services:
       mongo-db:
         image: vallabha051/mongodb-db:latest
-       
-    # env: 
-     #MONGO_URI: 'mongodb://localhost:27017/superData'
-      #MONGO_USERNAME: non-prod-user
-      #MONGO_PASSWORD: non-prod-password
+    env: 
+      MONGO_URI: 'mongodb://localhost:27017/superData'
+      MONGO_USERNAME: non-prod-user
+      MONGO_PASSWORD: non-prod-password
     runs-on: ubuntu-latest
     steps:
       - name: run the code-coverage
@@ -65,7 +63,3 @@ jobs:
         with:
           name: Test-Results
           path: Test-Results.xml
-
-
-        
-
