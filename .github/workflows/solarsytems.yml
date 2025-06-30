@@ -80,7 +80,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
  
-      - name: Build image (no push)
+      - name: Build image 
         uses: docker/build-push-action@v6
         with:
           context: .
