@@ -46,7 +46,7 @@ jobs:
       image: node:18
     services:
       mongo-db:
-        image: vallabha051/myrepo:latest
+        image: vallabha051/myrepo:Dockerfile
     env: 
       MONGO_URI: 'mongodb://localhost:27017/superData'
       MONGO_USERNAME: non-prod-user
