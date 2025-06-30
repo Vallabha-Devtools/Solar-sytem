@@ -1,5 +1,4 @@
-name: unit testing for the solar system project
-
+name: unit testing for the solarsytem project
 on:  
   push:
 
@@ -13,7 +12,7 @@ jobs:
     strategy:
       matrix:
         node-version: [18,20]
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest,windows-latest]
         exclude:
           - node-version: 18
             os: windows-latest
@@ -22,24 +21,24 @@ jobs:
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout the repository
+      - name: checkout the repository
         uses: actions/checkout@v4.2.2
         
-      - name: Setup Node.js
+      - name: Setup the nodeJS
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Cache NPM dependencies
+      - name: cache NPM dependencies
         uses: actions/cache@v3
         with:
           path: node_modules
           key: ${{ runner.os }}-node_modules-${{ hashfiles('package-lock.json') }}
 
-      - name: Install dependencies
+      - name: install dependencies
         run: npm install
         
-      - name: Run unit tests
+      - name: Testing the file
         run: npm test
 
   code-coverage:
@@ -47,11 +46,11 @@ jobs:
       image: node:18
     runs-on: ubuntu-latest
     steps:
-      - name: Run code coverage
+      - name: run the code-coverage
         continue-on-error: true
         run: npm run coverage
 
-      - name: Archive test results
+      - name: Archive the Test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -59,37 +58,35 @@ jobs:
           path: Test-Results.xml
   
   docker:
-    name: Containerization
-    needs: [build, code-coverage]
+    name: containerization
     permissions:
       packages: write
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
-
+ 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DH_USERNAME }}
           password: ${{ secrets.DH_PASSWORD }}
-
-      - name: Login to GitHub Container Registry (GHCR)
+ 
+      - name: Login to GH Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build Docker image
+ 
+      - name: Build image (no push)
         uses: docker/build-push-action@v6
         with:
           context: .
           push: false
-          tags: |
-            ${{ vars.DH_USERNAME }}/solar-system:${{ github.sha }}
-
-      - name: Test Docker image
+          tags: ${{ vars.DH_USERNAME }}/solar-system:${{ github.sha }}
+ 
+      - name: Testing Docker Img
         run: |
           docker images
           docker run --name solar-system-app -d \
@@ -101,10 +98,10 @@ jobs:
           export IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' solar-system-app)
           echo "Container IP: $IP"
 
-          echo "Testing image using wget"
-          wget -qO- 127.0.0.1:3000/live | grep live
-
-      - name: Push image to container registries
+          echo "Testing Image using wget"
+          wget -q -O - 127.0.0.1:3000/live | grep live
+     
+      - name: Push images to registries
         if: always()
         uses: docker/build-push-action@v6
         with:
@@ -112,17 +109,17 @@ jobs:
           push: true
           tags: |
             ${{ vars.DH_USERNAME }}/solar-system:${{ github.sha }}
-            ghcr.io/vallabha-devtools/solar-system:${{ github.sha }}  # ensure lowercase here
+            ghcr.io/vallabha-devtools/solar-system:${{ github.sha }}
 
-# Optional deployment job (currently commented)
-# dev-deploy:
-#   needs: [build, code-coverage]
-#   runs-on: ubuntu-latest
-#   steps:
-#     - name: Checkout the repository
-#       uses: actions/checkout@v4.2.2
-#     
-#     - name: Install kubectl
-#       uses: azure/setup-kubectl@v3
-#       with: 
-#         version: 'v1.26.0'
+  # Uncomment and customize if you want to add dev-deploy step later
+  # dev-deploy:
+  #   needs: [build, code-coverage]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout the repository
+  #       uses: actions/checkout@v4.2.2
+  #     
+  #     - name: kubectl install
+  #       uses: azure/setup-kubectl@v3
+  #       with: 
+  #         version: 'v1.26.0'  
