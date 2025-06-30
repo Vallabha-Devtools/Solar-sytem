@@ -65,7 +65,7 @@ jobs:
           path: Test-Results.xml
 
   dev-deploy:
-    needs: code-coverage
+    needs: [build,code-coverage]
     runs-on: ubuntu-latest
     steps:
       - name: checkout the repository
