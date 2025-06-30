@@ -63,3 +63,16 @@ jobs:
         with:
           name: Test-Results
           path: Test-Results.xml
+
+  dev-deploy:
+    needs: code-coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout the repository
+        uses: actions/checkout@v4.2.2
+      
+      - name: kubectl install
+        uses: azure/setup-kubectl@v3
+        with: 
+          version: 'v1.26.0'  
+
