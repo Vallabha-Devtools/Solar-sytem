@@ -117,21 +117,21 @@ jobs:
             ${{ vars.DH_USERNAME }}/solar-system:${{ github.sha }}
             ghcr.io/vallabha-devtools/solar-system:${{ github.sha }}
 
-  # deploy:
-  #   name: Deploy to Azure Web App
-  #   needs: docker
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4.2.2
+  deploy:
+    name: Deploy to Azure Web App
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
 
-  #     - name: Download Docker image from GHCR (optional)
-  #       run: echo "Deployment uses the container image pushed previously"
+      - name: Download Docker image from GHCR (optional)
+        run: echo "Deployment uses the container image pushed previously"
 
-  #     - name: Deploy to Azure Web App
-  #       uses: azure/webapps-deploy@v3
-  #       with:
-  #         app-name: 'qwerty0'                          # Replace with your Azure Web App name
-  #         slot-name: 'Production'
-  #         publish-profile: ${{ secrets.WEB_APP }}
-  #         images: ${{ vars.DH_USERNAME }}/solar-system:${{ github.sha }}
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'qwerty0'                          # Replace with your Azure Web App name
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.WEB_APP }}
+          images: ${{ vars.DH_USERNAME }}/solar-system:${{ github.sha }}
