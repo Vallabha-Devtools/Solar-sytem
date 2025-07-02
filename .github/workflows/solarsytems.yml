@@ -131,7 +131,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'actions'                          # Replace with your Azure Web App name
+          app-name: 'qwerty0'                          # Replace with your Azure Web App name
           slot-name: 'Production'
           publish-profile: ${{ secrets.WEB_APP }}
           images: ${{ vars.DH_USERNAME }}/solar-system:${{ github.sha }}
