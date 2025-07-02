@@ -1,7 +1,7 @@
 name: Unit Testing, Containerization and Deployment for SolarSystem Project
 
 on:
-  push:
+  workflow_dispatch:
 
 env:
   MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
