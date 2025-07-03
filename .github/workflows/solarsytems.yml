@@ -142,6 +142,6 @@ jobs:
       - name: Deploy to Azure Function App
         uses: Azure/functions-action@v1
         with:
-          app-name: action-deploy
-          publish-profile: ${{ secrets.FUNCTION_DEPLOY }}
+          app-name: function-deploy
+          publish-profile: ${{ secrets.FUNCTION_APP }}
           package: functionapp.zip
