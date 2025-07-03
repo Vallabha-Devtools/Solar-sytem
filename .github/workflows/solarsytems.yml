@@ -118,45 +118,30 @@ jobs:
             ghcr.io/vallabha-devtools/solar-system:${{ github.sha }}
 
   deploy:
-    name: Deploy to function Web App
+    name: Deploy to Function App
     needs: docker
     runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4.2.2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Download Docker image from GHCR (optional)
-  #       run: echo "Deployment uses the container image pushed previously"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
-  #     - name: Deploy to Azure Web App
-  #       uses: azure/webapps-deploy@v3
-  #       with:
-  #         app-name: 'qwerty0'                          # Replace with your Azure Web App name
-  #         slot-name: 'Production'
-  #         publish-profile: ${{ secrets.WEB_APP }}
-  #         images: ${{ vars.DH_USERNAME }}/solar-system:${{ github.sha }}
-      steps:
-        steps:
-         - name: Checkout code
-           uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm install
 
-         - name: Set up Node.js
-           uses: actions/setup-node@v4
-           with:
-            node-version: '18'
+      - name: Build (if needed)
+        run: npm run build || echo "No build step"
 
-         - name: Install dependencies
-           run: npm install
+      - name: Zip function app files
+        run: zip -r functionapp.zip .
 
-         - name: Build (if needed)
-           run: npm run build || echo "No build step"
-
-         - name: Zip function app files
-           run: zip -r functionapp.zip .
-
-         - name: Deploy to Azure Function App
-           uses: Azure/functions-action@v1
-           with:
-            app-name: action-deploy          # Replace with your Function App name
-            publish-profile: ${{ secrets.FUNCTION_DEPLOY }}
-           package: functionapp.zip
+      - name: Deploy to Azure Function App
+        uses: Azure/functions-action@v1
+        with:
+          app-name: action-deploy
+          publish-profile: ${{ secrets.FUNCTION_DEPLOY }}
+          package: functionapp.zip

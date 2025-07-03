@@ -1,30 +1,30 @@
-# name: Deploy Node.js App to Azure Web App - solar-system
+name: Deploy Node.js App to Azure Web App - solar-system
  
-# on:
-#   push:
-#     branches:
-#       - main
-#       - feature/exploring-workflows  
+on:
+  push:
+    branches:
+      - main
+      - feature/exploring-workflows  
  
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
  
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
  
-#       - name: Set up Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '18'  # Adjust if you're using a different version
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'  # Adjust if you're using a different version
  
-#       - name: Install dependencies
-#         run: npm install
+      - name: Install dependencies
+        run: npm install
  
-#       - name: Deploy to Azure Web App
-#         uses: azure/webapps-deploy@v2
-#         with:
-#           app-name: qwerty0
-#           publish-profile: ${{ secrets.WEB_APP }}
-#           package: .
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: qwerty0
+          publish-profile: ${{ secrets.WEB_APP }}
+          package: .
