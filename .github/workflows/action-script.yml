@@ -1,7 +1,7 @@
 name: List Milestone Issues
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Allows manual trigger from the GitHub UI
 
 jobs:
   list-milestone-issues:
@@ -17,9 +17,9 @@ jobs:
         with:
           script: |
             const query = `
-              query($owner: String!, $name: String!, $milestone: String!) {
+              query($owner: String!, $name: String!) {
                 repository(owner: $owner, name: $name) {
-                  milestones(first: 10, query: $milestone) {
+                  milestones(first: 10) {
                     nodes {
                       title
                       issues(first: 10) {
@@ -37,8 +37,7 @@ jobs:
             `;
             const variables = {
               owner: context.repo.owner,
-              name: context.repo.repo,
-              milestone: "v1.0" 
+              name: context.repo.repo
             };
             const result = await github.graphql(query, variables);
 
