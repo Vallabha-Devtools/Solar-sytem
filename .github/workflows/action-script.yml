@@ -57,7 +57,7 @@ jobs:
         run: echo "${{ steps.list_issues.outputs.result }}" > milestone-issues.txt
 
       - name: Upload milestone issues artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: milestone-issues
           path: milestone-issues.txt
