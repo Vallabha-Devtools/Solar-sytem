@@ -1,42 +1,39 @@
 pipeline {
     agent any
  
-    tools {
-        nodejs 'nodejs-24-1-0'
+   tools {
+    nodejs 'nodejs-22-6-0'
+}
+
+
+stages {
+    stage('Installing Dependencies') {
+        steps {
+            sh 'npm install --no-audit'
+        }
     }
-    // environment {
-    //     MONGO_URI = "mongodb+srv://supercluster.d83jj.mongodb.net/superData"
-    // }
- 
-    stages{
-        stage('Installing Deps') {
-            options { timestamps() }
-            steps {
-                sh 'npm install --no-audit'
-            }
-        }
- 
-        stage('Dependency Scanning') {
-            parallel {
-                stage('NPM Dep Audit') {
-                    steps {
-                        sh '''
-                            npm audit --audit-level=critical
-                            echo $?
-                        '''
-                    }
+    
+    stage('Dependency Scanning') {
+        parallel {
+            stage('NPM Dependency Audit') {
+                steps {
+                    sh '''
+                        npm audit --audit-level=critical
+                        echo $?
+                    '''
                 }
-                stage('OWASP Dependency Check') {
-                    steps {
-                        dependencyCheck additionalArguments: '''
-                            --scan ./ \
-                            --out ./ \
-                            --format ALL \
-                            --prettyPrint
-                        ''', odcInstallation: 'OWASP-depcheck-12'
- 
-                        
-                    }      
+            }
+            
+            stage('OWASP Dependency Check') {
+                steps {
+                    dependencyCheck additionalArguments: '''
+                        --scan './'
+                        --out './'
+                        --format 'ALL'
+                        --prettyPrint
+                    ''', odcInstallation: 'OWASP-DepCheck-12'
                 }
             }
         }
+    }
+}
