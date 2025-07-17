@@ -1,0 +1,62 @@
+name: List Milestone Issues
+
+on:
+  workflow_dispatch:  # Allows manual trigger from the GitHub UI
+
+jobs:
+  list-milestone-issues:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: List milestone issues using GraphQL
+        id: list_issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const query = `
+              query($owner: String!, $name: String!) {
+                repository(owner: $owner, name: $name) {
+                  milestones(first: 10) {
+                    nodes {
+                      title
+                      issues(first: 10) {
+                        nodes {
+                          number
+                          title
+                          url
+                          state
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            const variables = {
+              owner: context.repo.owner,
+              name: context.repo.repo
+            };
+            const result = await github.graphql(query, variables);
+
+            let output = '';
+            for (const milestone of result.repository.milestones.nodes) {
+              output += `Milestone: ${milestone.title}\n`;
+              for (const issue of milestone.issues.nodes) {
+                output += `#${issue.number}: ${issue.title} [${issue.state}]\n`;
+                output += `URL: ${issue.url}\n`;
+              }
+              output += '\n';
+            }
+            return output;
+
+      - name: Save output to file
+        run: echo "${{ steps.list_issues.outputs.result }}" > milestone-issues.txt
+
+      - name: Upload milestone issues artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: milestone-issues
+          path: milestone-issues.txt
