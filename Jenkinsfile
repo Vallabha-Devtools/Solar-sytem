@@ -22,6 +22,10 @@ pipeline {
                         '''
                     }
                 }
+            }
+        }
+    }
+}
  
         //         stage('OWASP Dependency Check') {
         //             steps {
@@ -33,7 +37,4 @@ pipeline {
         //                 ''', odcInstallation: 'OWASP-depcheck-12'
         //             }
         //         }
-//             }
-        }
-    }
-}
+
