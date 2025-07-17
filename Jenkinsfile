@@ -2,14 +2,15 @@ pipeline {
   agent any
 
   tools {
-    nodejs 'nodejs-24-4-1' 
+    nodejs 'nodejs 24-4-1' // Make sure this matches your NodeJS tool name in Jenkins
+  }
 
   stages {
-    stage('Version Check') {
+    stage('Check Node & npm Versions') {
       steps {
-        sh 'node -v'
-        sh 'npm -v'
+        sh 'node -v && npm -v'
       }
     }
   }
 }
+
