@@ -1,11 +1,17 @@
 pipeline {
     agent any
+ 
+    tools {
+        nodejs 'nodejs-22-6-0'
+    }
+ 
     stages {
         stage('Installing Dependencies') {
             steps {
                 sh 'npm install --no-audit'
             }
         }
+ 
         stage('Dependency Scanning') {
             parallel {
                 stage('NPM Dependency Audit') {
@@ -16,6 +22,7 @@ pipeline {
                         '''
                     }
                 }
+ 
                 stage('OWASP Dependency Check') {
                     steps {
                         dependencyCheck additionalArguments: '''
@@ -24,7 +31,6 @@ pipeline {
                             --format 'ALL'
                             --prettyPrint
                         ''', odcInstallation: 'OWASP-DepCheck-12'
-                       
                     }
                 }
             }
