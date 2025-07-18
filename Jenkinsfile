@@ -1,9 +1,9 @@
 pipeline {
     agent any
-    tools{
+    tools {
         nodejs 'nodejs'
     }
-    environment{
+    environment {
         MONGO_URI = "mongodb+srv://supercluster.d83jj.mongodb.net/superData"
         MONGO_DB_CREDS = credentials('mongo-db-creds')
         MONGO_USERNAME = credentials('mongo-db-username')
@@ -15,6 +15,7 @@ pipeline {
                 sh 'npm install --no-audit'
             }
         }
+
         stage('Dependency Scanning') {
             parallel {
                 stage('NPM Dependency Audit') {
@@ -33,32 +34,28 @@ pipeline {
                             --format 'ALL'
                             --prettyPrint
                         ''', odcInstallation: 'OWASP-depcheck-12'
-                        
                     }
                 }
             }
         }
+
         stage('Unit test') {
             options { retry(2) }
- 
             steps {
-                    sh 'echo colon seperated creds: $MONGO_DB_CREDS'
-                    sh 'echo Mongodb-username: $MONGO_DB_CREDS_USR'
-                    sh 'echo Mongodb-password: $MONGO_DB_CREDS_PSW'
-                    sh 'npm test'
-                    junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
+                sh 'echo colon separated creds: $MONGO_DB_CREDS'
+                sh 'echo Mongodb-username: $MONGO_DB_CREDS_USR'
+                sh 'echo Mongodb-password: $MONGO_DB_CREDS_PSW'
+                sh 'npm test'
+                junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
             }
         }
-         stage('code coverage') {
-            
- 
+
+        stage('code coverage') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'mongo-db-credentials', passwordVariable: 'MONGO_PASSWORD', usernameVariable: 'MONGO_USERNAME')]) {
-                    // catchError(buildResult: 'SUCCESS', message: 'Oops! it will be fixed in future releases', stageResult: 'UNSTABLE') {
                     sh 'npm run coverage'
-                    
+                }
             }
         }
-        
     }
 }
