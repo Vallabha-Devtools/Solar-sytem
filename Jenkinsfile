@@ -49,5 +49,16 @@ pipeline {
                     junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
             }
         }
+         stage('code coverage') {
+            
+ 
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'mongo-db-credentials', passwordVariable: 'MONGO_PASSWORD', usernameVariable: 'MONGO_USERNAME')]) {
+                    // catchError(buildResult: 'SUCCESS', message: 'Oops! it will be fixed in future releases', stageResult: 'UNSTABLE') {
+                    sh 'npm run coverage'
+                    
+            }
+        }
+        
     }
 }
