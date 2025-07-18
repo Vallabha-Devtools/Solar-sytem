@@ -1,17 +1,14 @@
 pipeline {
     agent any
- 
-    tools {
+    tools{
         nodejs 'nodejs'
     }
- 
     stages {
         stage('Installing Dependencies') {
             steps {
                 sh 'npm install --no-audit'
             }
         }
- 
         stage('Dependency Scanning') {
             parallel {
                 stage('NPM Dependency Audit') {
@@ -22,19 +19,18 @@ pipeline {
                         '''
                     }
                 }
+                stage('OWASP Dependency Check') {
+                    steps {
+                        dependencyCheck additionalArguments: '''
+                            --scan './'
+                            --out './'
+                            --format 'ALL'
+                            --prettyPrint
+                        ''', odcInstallation: 'OWASP-DepCheck-12'
+                        
+                    }
+                }
             }
         }
     }
 }
- 
-        //         stage('OWASP Dependency Check') {
-        //             steps {
-        //                 dependencyCheck additionalArguments: '''
-        //                     --scan './'
-        //                     --out './'
-        //                     --format 'ALL'
-        //                     --prettyPrint
-        //                 ''', odcInstallation: 'OWASP-depcheck-12'
-        //             }
-        //         }
-
