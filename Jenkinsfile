@@ -46,7 +46,6 @@ pipeline {
                 sh 'echo Mongodb-username: $MONGO_DB_CREDS_USR'
                 sh 'echo Mongodb-password: $MONGO_DB_CREDS_PSW'
                 sh 'npm test'
-                junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
             }
         }
 
@@ -55,13 +54,20 @@ pipeline {
                 catchError(buildResult: 'SUCCESS', message: 'Oops! it will be fixed in the future releases', stageResult: 'UNSTABLE') {
                     sh 'npm run coverage'
                 }
-                publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, 
+            }
+        }
+    }
+    post {
+        always {
+            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, 
                              reportDir: 'coverage/lcov-report', 
                              reportFiles: 'index.html', 
                              reportName: 'Code Coverage HTML Report', 
                              reportTitles: '', 
                              useWrapperFileDirectly: true])
-            }
+            junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
+    
         }
     }
+
 }
