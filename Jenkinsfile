@@ -70,12 +70,17 @@ pipeline {
                 '''
             }
         }
-        stage('Docker build image'){
+        stage('Docker build image') {
             steps{
-                // sh 'printenv'
-                // sh 'ls -l'
-                // sh 'cat Dockerfile'   //to confirm docker contents
                 sh 'sudo docker build -t vallabha051/solar-system:$GIT_COMMIT .'
+                
+            }
+        }
+        stage('push Docker image') {
+            steps{
+                withDockerRegistry(credentialsId: 'docker-hub-creds', url: "") {
+                    sh 'docker push samarthdoc123/solar-system:$GIT_COMMIT'
+                }
             }
         }
     }
