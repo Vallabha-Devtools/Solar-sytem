@@ -73,7 +73,7 @@ pipeline {
         stage('Docker build image'){
             steps{
                 sh 'printenv'
-                sh 'docker build -t vallabha051/solar-system:$GIT_COMMIT .'
+                sh 'sudo docker build -t vallabha051/solar-system:$GIT_COMMIT .'
             }
         }
     }
