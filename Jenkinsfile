@@ -77,7 +77,7 @@ pipeline {
             }
         }
         stage('push Docker image') {
-            steps{
+            steps {
                 withDockerRegistry(credentialsId: 'docker-hub-creds', url: "") {
                     sh 'sudo docker push vallabha051/solar-system:$GIT_COMMIT'
                 }
