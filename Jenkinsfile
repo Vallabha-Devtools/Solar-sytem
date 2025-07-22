@@ -70,6 +70,12 @@ pipeline {
                 '''
             }
         }
+        stage('Docker build image'){
+            steps{
+                sh 'printenv'
+                sh 'docker build -t vallabha051/solar-system:$GIT_COMMIT .'
+            }
+        }
     }
     post {
         always {
