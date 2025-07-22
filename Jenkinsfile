@@ -72,10 +72,10 @@ pipeline {
         }
         stage('Docker build image'){
             steps{
-                sh 'printenv'
-                sh 'ls -l'
-                sh 'cat Dockerfile'   //to confirm docker contents
-                sh 'docker build -t vallabha051/solar-system:$GIT_COMMIT .'
+                // sh 'printenv'
+                // sh 'ls -l'
+                // sh 'cat Dockerfile'   //to confirm docker contents
+                sh 'sudo docker build -t vallabha051/solar-system:$GIT_COMMIT .'
             }
         }
     }
