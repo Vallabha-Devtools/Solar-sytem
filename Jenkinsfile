@@ -115,13 +115,27 @@ pipeline {
             }
         }
         stage('push Docker image') {
-    steps {
-        withDockerRegistry(credentialsId: 'docker-hub-creds', url: "") {
-            sh '''
+            steps {
+                withDockerRegistry(credentialsId: 'docker-hub-creds', url: "") {
+                sh '''
                 echo "Logging in to Docker Hub..."
                 echo "dckr_pat_bUuqwNEgf8FdU-DN_cgoQ5KOkeI" | docker login -u vallabha051 --password-stdin
                 docker push vallabha051/solar-system:$GIT_COMMIT
-            '''
+                '''
+        }
+        stage('Deployment') {
+            steps{
+                sshagent(['azure-vm-ssh-creds']) {
+                sh '''
+                    ssh -o StrictHostKeyChecking=no <vm-username>@<vm-ip> << EOF
+                        docker pull vallabha051/solar-system:$GIT_COMMIT
+                        docker stop solar-container || true
+                        docker rm solar-container || true
+                        docker run -d --name solar-container -p 80:3000 vallabha051/solar-system:$GIT_COMMIT
+                    EOF
+                '''
+                }
+            }
         }
     }
 }
