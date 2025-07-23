@@ -115,15 +115,16 @@ pipeline {
             }
         }
         stage('push Docker image') {
-            steps {
-                withDockerRegistry(credentialsId: 'docker-hub-creds', url: "") {
-                    sh '''
-                    docker login -u vallabha051  -p dckr_pat_bUuqwNEgf8FdU-DN_cgoQ5KOkeI
-                    docker push vallabha051/solar-system:$GIT_COMMIT
-                    '''
-                }
-            }
+    steps {
+        withDockerRegistry(credentialsId: 'docker-hub-creds', url: "") {
+            sh '''
+                echo "Logging in to Docker Hub..."
+                echo "dckr_pat_bUuqwNEgf8FdU-DN_cgoQ5KOkeI" | docker login -u vallabha051 --password-stdin
+                docker push vallabha051/solar-system:$GIT_COMMIT
+            '''
         }
+    }
+}
     }
     post {
         always {
