@@ -76,10 +76,46 @@ pipeline {
                 
             }
         }
+        stage('trivy security scanner') {
+            steps{
+                sh '''
+                trivy image vallabha051/solar-system:$GIT_COMMIT \
+                    --severity LOW, MEDIUM, HIGH \
+                    --exit-code 0 \
+                    --quiet \
+                    --format json -o trivy-image-MEDIUM-results.json
+                trivy image vallabha051/solar-system:$GIT_COMMIT \
+                    --severity HIGH, CRITICAL \
+                    --exit-code 1 \
+                    --quiet \
+                    --format json -o trivy-image-CRITICAL-results.json
+            '''
+            }
+            post{
+                always{
+                    sh '''
+                        trivy convert \
+                            --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
+                            --output trivy-image-MEDIUM-results.html trivy-image-MEDIUM-results.json trivy convert \
+                            --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
+                            --output trivy-image-CRITICAL-results.html trivy-image-CRITICAL-results.json
+                        trivy convert \
+                            --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
+                            --output trivy-image-MEDIUM-results.xml trivy-image-MEDIUM-results.json
+                        trivy convert \
+                            --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
+                            --output trivy-image-CRITICAL-results.xml trivy-image-CRITICAL-results.json
+                    '''
+                }
+            }
+        }
         stage('push Docker image') {
             steps {
                 withDockerRegistry(credentialsId: 'docker-hub-creds', url: "") {
-                    sh 'docker push vallabha051/solar-system:$GIT_COMMIT'
+                    sh """
+                    docker login -u vallabha051  -p dckr_pat_bUuqwNEgf8FdU-DN_cgoQ5KOkeI
+                    docker push vallabha051/solar-system:$GIT_COMMIT'
+                    """
                 }
             }
         }
@@ -93,6 +129,15 @@ pipeline {
                              reportTitles: '', 
                              useWrapperFileDirectly: true])
             junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
+            unit allowEmptyResults: true, stdioRetention: 'ALL', testResults: 'trivy-image-MEDIUM-results.xml'
+            junit allowEmptyResults: true, stdioRetention: 'ALL', testResults: 'trivy-image-CRITICAL-results.xml'
+            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: './', reportFiles: 'trivy-image-MEDIUM-results.html', reportName: 'Trivy Img Medium vul report', reportTitles: '', useWrapperFileDirectly: true])
+ 
+            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: './', reportFiles: 'trivy-image-CRITICAL-results.html', reportName: 'Trivy Img Critical vul report', reportTitles: '', useWrapperFileDirectly: true])
+ 
+            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: './', reportFiles: 'dependency-check-jenkins.html', reportName: 'Dependency CheckHTML Report', reportTitles: '', useWrapperFileDirectly: true])
+ 
+            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: 'coverage/lcov-report', reportFiles: 'index.html', reportName: 'Code-Coverage HTML Report', reportTitles: '', useWrapperFileDirectly: true])
     
         }
     }
