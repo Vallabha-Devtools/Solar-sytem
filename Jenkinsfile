@@ -8,7 +8,7 @@ pipeline {
         MONGO_DB_CREDS = credentials('mongo-db-creds')
         MONGO_USERNAME = credentials('mongo-db-username')
         MONGO_PASSWORD = credentials('mongo-db-password')
-        SONAR_SCANNER_HOME = tool 'sonarqube-scanner610';
+        SONAR_SCANNER_HOME = tool 'sonarqube-scanner610'
     }
     stages {
         stage('Installing Dependencies') {
@@ -50,13 +50,14 @@ pipeline {
             }
         }
 
-        stage('code coverage') {
+        stage('Code coverage') {
             steps {
                 catchError(buildResult: 'SUCCESS', message: 'Oops! it will be fixed in the future releases', stageResult: 'UNSTABLE') {
                     sh 'npm run coverage'
                 }
             }
         }
+
         stage('SAST Sonarqube') {
             steps {
                 sh 'echo $SONAR_SCANNER_HOME'
@@ -70,43 +71,44 @@ pipeline {
                 '''
             }
         }
+
         stage('Docker build image') {
-            steps{
+            steps {
                 sh 'sudo docker build -t vallabha051/solar-system:$GIT_COMMIT .'
-                
             }
         }
-        stage('trivy security scanner') {
-            steps{
+
+        stage('Trivy security scanner') {
+            steps {
                 sh '''
                     trivy image vallabha051/solar-system:$GIT_COMMIT \
                         --severity LOW,MEDIUM,HIGH \
                         --exit-code 0 \
                         --quiet \
                         --format json -o trivy-image-MEDIUM-results.json
- 
+
                     trivy image vallabha051/solar-system:$GIT_COMMIT \
                         --severity CRITICAL \
                         --exit-code 1 \
                         --quiet \
-                       --format json -o trivy-image-CRITICAL-results.json
+                        --format json -o trivy-image-CRITICAL-results.json
                 '''
             }
-            post{
-                always{
+            post {
+                always {
                     sh '''
                         trivy convert \
                             --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
                             --output trivy-image-MEDIUM-results.html trivy-image-MEDIUM-results.json
- 
+
                         trivy convert \
                             --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
                             --output trivy-image-CRITICAL-results.html trivy-image-CRITICAL-results.json
- 
+
                         trivy convert \
                             --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
                             --output trivy-image-MEDIUM-results.xml trivy-image-MEDIUM-results.json
- 
+
                         trivy convert \
                             --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
                             --output trivy-image-CRITICAL-results.xml trivy-image-CRITICAL-results.json
@@ -114,48 +116,48 @@ pipeline {
                 }
             }
         }
-        stage('push Docker image') {
+
+        stage('Push Docker image') {
             steps {
                 withDockerRegistry(credentialsId: 'docker-hub-creds', url: "") {
-                sh '''
-                echo "Logging in to Docker Hub..."
-                echo "dckr_pat_bUuqwNEgf8FdU-DN_cgoQ5KOkeI" | docker login -u vallabha051 --password-stdin
-                docker push vallabha051/solar-system:$GIT_COMMIT
-                '''
-        }
-        stage('Deployment') {
-            steps{
-                sshagent(['azure-vm-ssh-creds']) {
-                sh '''
-                    ssh -o StrictHostKeyChecking=no <vm-username>@<vm-ip> << EOF
-                        docker pull vallabha051/solar-system:$GIT_COMMIT
-                        docker stop solar-container || true
-                        docker rm solar-container || true
-                        docker run -d --name solar-container -p 80:3000 vallabha051/solar-system:$GIT_COMMIT
-                    EOF
-                '''
+                    sh '''
+                        echo "Logging in to Docker Hub..."
+                        echo "dckr_pat_bUuqwNEgf8FdU-DN_cgoQ5KOkeI" | docker login -u vallabha051 --password-stdin
+                        docker push vallabha051/solar-system:$GIT_COMMIT
+                    '''
                 }
             }
         }
-    }
-}
+
+        stage('Deployment') {
+            steps {
+                sshagent(['azure-vm-ssh-creds']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no <vm-username>@<vm-ip> << EOF
+                            docker pull vallabha051/solar-system:$GIT_COMMIT
+                            docker stop solar-container || true
+                            docker rm solar-container || true
+                            docker run -d --name solar-container -p 80:3000 vallabha051/solar-system:$GIT_COMMIT
+                        EOF
+                    '''
+                }
+            }
+        }
     }
     post {
         always {
             junit allowEmptyResults: true, stdioRetention: 'ALL', testResults: 'dependency-check-junit.xml'
             junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
- 
+
             junit allowEmptyResults: true, stdioRetention: 'ALL', testResults: 'trivy-image-MEDIUM-results.xml'
             junit allowEmptyResults: true, stdioRetention: 'ALL', testResults: 'trivy-image-CRITICAL-results.xml'
             publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: './', reportFiles: 'trivy-image-MEDIUM-results.html', reportName: 'Trivy Img Medium vul report', reportTitles: '', useWrapperFileDirectly: true])
- 
+
             publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: './', reportFiles: 'trivy-image-CRITICAL-results.html', reportName: 'Trivy Img Critical vul report', reportTitles: '', useWrapperFileDirectly: true])
- 
+
             publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: './', reportFiles: 'dependency-check-jenkins.html', reportName: 'Dependency CheckHTML Report', reportTitles: '', useWrapperFileDirectly: true])
- 
+
             publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: 'coverage/lcov-report', reportFiles: 'index.html', reportName: 'Code-Coverage HTML Report', reportTitles: '', useWrapperFileDirectly: true])
-    
         }
     }
-
 }
