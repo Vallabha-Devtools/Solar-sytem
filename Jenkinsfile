@@ -129,20 +129,6 @@ pipeline {
             }
         }
 
-        stage('Deployment') {
-            steps {
-                sshagent(['azure-vm-ssh-creds']) {
-                    sh '''
-                        ssh -o StrictHostKeyChecking=no <vm-username>@<vm-ip> << EOF
-                            docker pull vallabha051/solar-system:$GIT_COMMIT
-                            docker stop solar-container || true
-                            docker rm solar-container || true
-                            docker run -d --name solar-container -p 80:3000 vallabha051/solar-system:$GIT_COMMIT
-                        EOF
-                    '''
-                }
-            }
-        }
     }
     post {
         always {
