@@ -129,7 +129,32 @@ pipeline {
             }
         }
 
+        stage('Deploy - AWS EC2') {
+            when {
+                branch 'feature/*'
+            }
+            steps {
+                sshagent(['aws-dev-deploy-ec2-instance']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@34.228.30.212 "
+                            if sudo docker ps -a | grep -q 'solar-system'; then
+                                echo 'Container found. Stopping...'
+                                sudo docker stop solar-system && sudo docker rm solar-system
+                                echo 'Container stopped and removed.'
+                            fi
+
+                            sudo docker run --name solar-system \\
+                                -e MONGO_URI=$MONGO_URI \\
+                                -e MONGO_USERNAME=$MONGO_USERNAME \\
+                                -e MONGO_PASSWORD=$MONGO_PASSWORD \\
+                                -p 3000:3000 -d vallabha051/solar-system:$GIT_COMMIT
+                        "
+                    '''
+                }
+            }
+        }
     }
+
     post {
         always {
             junit allowEmptyResults: true, stdioRetention: 'ALL', testResults: 'dependency-check-junit.xml'
@@ -138,11 +163,8 @@ pipeline {
             junit allowEmptyResults: true, stdioRetention: 'ALL', testResults: 'trivy-image-MEDIUM-results.xml'
             junit allowEmptyResults: true, stdioRetention: 'ALL', testResults: 'trivy-image-CRITICAL-results.xml'
             publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: './', reportFiles: 'trivy-image-MEDIUM-results.html', reportName: 'Trivy Img Medium vul report', reportTitles: '', useWrapperFileDirectly: true])
-
             publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: './', reportFiles: 'trivy-image-CRITICAL-results.html', reportName: 'Trivy Img Critical vul report', reportTitles: '', useWrapperFileDirectly: true])
-
             publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: './', reportFiles: 'dependency-check-jenkins.html', reportName: 'Dependency CheckHTML Report', reportTitles: '', useWrapperFileDirectly: true])
-
             publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: 'coverage/lcov-report', reportFiles: 'index.html', reportName: 'Code-Coverage HTML Report', reportTitles: '', useWrapperFileDirectly: true])
         }
     }
